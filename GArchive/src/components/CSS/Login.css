@@ -1,10 +1,9 @@
 .main-container {
     overflow: hidden;
-    height: 100vh; /* Ensure parent is visible */
+    height: 90vh; /* Ensure parent is visible */
 }
 
 .account-page {
-    margin-top: 2rem;
     background-color: #1f2937af;
     height: 100%; /* Set a height to make it visible */
     width: 100%; /* Optional, ensure it spans the container */
