@@ -1,9 +1,10 @@
 .main-container {
-    overflow: hidden;
-    height: 90vh; /* Ensure parent is visible */
+    overflow-x: hidden;
+    height: 100vh; /* Ensure parent is visible */
 }
 
 .account-page {
+    margin-top: 4rem;
     background-color: #1f2937af;
     height: 100%; /* Set a height to make it visible */
     width: 100%; /* Optional, ensure it spans the container */
@@ -14,6 +15,7 @@
 .LoginPage, .RegisterPage {
     width: 100%;
     height: 100vh;
+    margin-bottom: 6rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -69,6 +71,49 @@
     transition: background-color 0.2s ease;
 }
 
+button:disabled {
+    opacity: 0.5; /* Optional: reduces opacity to make the button look disabled */
+    cursor: not-allowed; /* Changes the cursor to 'not-allowed' when hovering over the disabled button */
+}
+
+/* Tooltip style */
+.tooltip {
+    visibility: hidden;
+    width: 200px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    
+    /* Positioning */
+    position: absolute;
+    z-index: 1;
+}
+
+.register-messsage{
+    color: rgba(255, 255, 255, 0.938);
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Show tooltip on hover */
+.otp-button:hover .tooltip {
+    visibility: visible; /* Show tooltip on hover */
+}
+
+/* For Chrome, Safari, Edge, and Opera */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none; /* Remove default appearance */
+    margin: 0; /* Reset margin */
+}
+
+/* For Firefox */
+input[type=number] {
+    -moz-appearance: textfield; /* Change appearance to textfield */
+}
+
 .LoginPage button:hover, .RegisterPage button:hover {
     background-color: #5a5a5a;
 }
@@ -77,6 +122,10 @@
     background-color: #3a3a3a;
 }
 
+
+.otp-input {
+    margin-bottom: 15px;
+}
 /* Animation for modal appearance */
 @keyframes modalFade {
     from {
@@ -87,6 +136,11 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+h1{
+    color: white;
+    font-size: 24px;
 }
 
 /* Responsive adjustments */

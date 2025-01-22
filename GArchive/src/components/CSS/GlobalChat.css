@@ -1,0 +1,6 @@
+.main-global-content {
+    margin-top: 4rem;
+    background-color: #1f2937af;
+    height: 100%; /* Set a height to make it visible */
+    width: 100%; /* Optional, ensure it spans the container */
+}
