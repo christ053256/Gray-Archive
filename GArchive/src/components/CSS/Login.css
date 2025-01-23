@@ -102,6 +102,14 @@ button:disabled {
     visibility: visible; /* Show tooltip on hover */
 }
 
+.verify-otp{
+    margin-bottom: 10px;
+}
+
+.new-password:hover .tooltip{
+    visibility: visible;
+}
+
 /* For Chrome, Safari, Edge, and Opera */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

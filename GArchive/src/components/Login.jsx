@@ -16,10 +16,10 @@ const Login = ({ onLogin }) => {
     //Forgot passwords OTP Variables
     const [otp, setOtp] = useState("");
     const [user_otp, setUser_otp] = useState("");
-    const [notConsfirmOTP, setNotConfirmOTP] = useState(true);
+    const [confirmedOTP, setConfirmedOTP] = useState(false);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    
+    const [showNewPasswordInput, setShowPasswordInput] = useState(false);
 
 
     //Register Variables
@@ -28,24 +28,45 @@ const Login = ({ onLogin }) => {
     const [isCooldown, setIsCooldown] = useState(false); // To track cooldown state
     const [timeLeft, setTimeLeft] = useState(0); // To show remaining cooldown time
 
+    const handleShowPasswordInput = () => {
+        setPassword("");
+        setEmail("");
+        setNickname("");
+
+        setConfirmedOTP(false);
+        setShowLogin(false);
+        setShowRegister(false);
+        setShowForgotPassword(false);
+        setShowOTPinput(false);
+        setShowOTPinput(false);
+        setConfirmedOTP(false);
+        setShowPasswordInput(true);
+    }
 
     const handleShowLogin = (e)=>{
         setUsername("");
         setPassword("");
         setEmail("");
         setNickname("");
+        setOtp("");
+        setUser_otp("");
+
+        setConfirmedOTP(false);
         setShowLogin(true);
         setShowRegister(false);
         setShowForgotPassword(false);
         setShowOTPinput(false);
-
         setShowOTPinput(false);
-        setNotConfirmOTP(true);
+        setConfirmedOTP(false);
     }
 
     const handleShowSignUp = (e)=>{
         setUsername("");
         setPassword("");
+        setUser_otp("");
+        setOtp("");
+
+        setConfirmedOTP(false);
         setShowLogin(false);
         setShowRegister(true);
         setShowForgotPassword(false);
@@ -57,23 +78,16 @@ const Login = ({ onLogin }) => {
         setPassword("");
         setEmail("");
         setNickname("");
+        setUser_otp("");
+        setOtp("");
+
+        setConfirmedOTP(false);
         setShowLogin(false);
         setShowRegister(false);
         setShowForgotPassword(true);
         setShowOTPinput(false);
     }
 
-    const handShowResetPassword = (e) => {
-        setUsername("");
-        setPassword("");
-        setEmail("");
-        setNickname("");
-        setShowLogin(false);
-        setShowRegister(false);
-        setShowForgotPassword(false);
-        setShowResetPassword(true);
-        setShowOTPinput(false);
-    }
 
     const handleShowOTPinput = (e) => {
         if (isCooldown) return;
@@ -105,51 +119,50 @@ const Login = ({ onLogin }) => {
         setOtp(generateOTP());
     }
 
-    const checkEmailandUsername = (e) => {
-        e.preventDefault();
-        //Check if the email and username match in the database
-    }
+    const verifyOTP = () => {
+        if (user_otp.length === 0){
+            setMessage("Please input OTP");
+            return;
+        }
 
-    const verifyOTP = (e) => {
-        e.preventDefault();
-        if (otp === otp) {
-            setNotConfirmOTP(false);
+        if (otp == user_otp) {
+            setConfirmedOTP(true);
+            setMessage(null);
         } else {
             setMessage("Incorrect OTP");
         }
     }
 
-
-    const handleResetPassword = (e) => {
-        //Reset the password
-        return (
-            <div className="ResetPassword LoginPage">
-                <form>
-                    <h1>Reset Password</h1>
-                    <input 
-                        type="password"
-                        placeholder="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <input 
-                        type="password"
-                        placeholder="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-
-                    <button>RESET PASSWORD</button>
-
-                </form>
-            </div>
-        );
+    const djb2Hash = (password) =>{
+        let hash = 5381;
+        
+        for (let i = 0; i < password.length; i++){
+            hash = (((hash * 32) + hash) + password.charCodeAt(i));
+        }
+        console.log(hash.toString);
+        return hash.toString();
     }
-    
 
+  
 
     const ForgotPassword = () =>{
+        const handleForgotPassword = async () =>{
+            try {
+                const { data } = await axios.get('http://localhost:5000/users');
+            
+                // Check if a specific username already exists
+                const userExists = data.some(user => user.username === username && user.email === email);
+            
+                if (userExists) {
+                    alert("This user indeed exist!");
+                    return;
+                } 
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                setMessage(error.response?.data?.error || "Failed to fetch users");
+            }
+        }
+
         return (
             <div className="ForgotPasswordPage LoginPage">
                 <form>
@@ -168,22 +181,100 @@ const Login = ({ onLogin }) => {
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    <button onClick={handleShowOTPinput}>Send OTP</button>
-                        {showOTPinput && 
-                            <div>
-                                <input 
-                                    type="text"
-                                    placeholder="OTP"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                />
+                    <button onClick={(e)=>{
+                        e.preventDefault();
+                        handleShowOTPinput();
+                        handleForgotPassword();
+                        handleSendOTP();
+                    }}
+                        disabled={isCooldown || confirmedOTP}
+                    >{showOTPinput ? `Resend OTP ${isCooldown ? 'in '+timeLeft:''}` : "Send OTP"}
 
-                                <button onClick={verifyOTP}>Verify OTP</button>
-                            </div>
-                        }
+                    {(email.length < 11 ? true : false) && <span className="tooltip">Please enter your email address</span>}</button>
+                    
+                    {showOTPinput &&
+                        <div>
+                            <input
+                                className="otp-input" 
+                                type="number"
+                                placeholder="OTP"
+                                value={user_otp}
+                                onChange={(e) => setUser_otp(e.target.value)}
+                            />
+                            {message && <p>{message}</p>}
+                            <button
+                            className="verify-otp"
+                            onClick={(e)=>{
+                                e.preventDefault();
+                                verifyOTP();
+                            }}
+
+                            disabled={confirmedOTP}
+                            > Verify OTP</button>
+                            {console.log(`OTP: ${otp}`)}
+                            {console.log(`USER OTP: ${user_otp}`)}
+                            <button 
+                                className="new-password"
+                                onClick={handleShowPasswordInput}
+                                disabled={!confirmedOTP}
+                                
+                            >
+                                {!confirmedOTP && <span className="tooltip">Please verify your OTP</span>}
+                                Create new password  
+                            </button>
+                            
+                        </div>
+                    }
                     <p>Already remember your password? <a href="#" onClick={handleShowLogin}>Login now!</a></p>
                 </form>
-                
+            </div>
+        );
+    }
+
+    const createNewPassword = () =>{
+        const handleChangePassword = async () =>{
+            if(newPassword !== confirmPassword){
+                setMessage("Please make sure new password and confirm password are the same!");
+                return;
+            }
+
+            try {
+                const response = await axios.post('http://localhost:5000/change-password', {
+                    username,
+                    newPassword : djb2Hash(newPassword),
+                });
+                alert("Password updated successfully");
+                window.location.reload();
+            } catch (error) {
+                setMessage(error.response?.data?.error || 'Error changing password');
+            }
+        }
+
+        return(
+            <div className="createNewPassword LoginPage">
+                <form>
+                    <h1>Create new password for {username}</h1>
+                        <input 
+                            type="password"
+                            placeholder="new password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                        />
+
+                        <input 
+                            type="password"
+                            placeholder="confirm password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        
+                        {message && <p>{message}</p>}
+                        <button onClick={(e)=>{
+                            e.preventDefault();
+                            handleChangePassword();
+                        }}>Change Password</button>
+                        
+                </form>
             </div>
         );
     }
@@ -200,15 +291,14 @@ const Login = ({ onLogin }) => {
             try {
                 const response = await axios.post('http://localhost:5000/login', {
                     username,
-                    password
+                    password : djb2Hash(password),
                 });
                 console.log(response.data);
                 onLogin();
                 alert("Login successful!");
                 setMessage(null);
             } catch (error) {
-                console.error('Login failed:', error);
-                setMessage(error.response?.data?.error || "Login failed");
+                setMessage("Wrong username or password!");
             }
         };
 
@@ -229,6 +319,7 @@ const Login = ({ onLogin }) => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
+                    {message && <p>{message}</p>}
 
                     <button onClick={handleLogin}>Login</button>
                     <p>Don't have account yet? <a href="#" onClick={handleShowSignUp}>Sign-up now!</a></p>
@@ -269,7 +360,7 @@ const Login = ({ onLogin }) => {
             try {
                 const response = await axios.post('http://localhost:5000/register', {
                     username,
-                    password,
+                    password: djb2Hash(password),
                     email,
                     nickname
                 });
@@ -279,7 +370,7 @@ const Login = ({ onLogin }) => {
 
                 //Reset the input fields
                 setShowOTPinput(false);
-                setNotConfirmOTP(true);
+                setConfirmedOTP(false);
 
                 //Go back to login page
                 handleShowLogin();
@@ -323,10 +414,11 @@ const Login = ({ onLogin }) => {
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    {notConsfirmOTP && 
+                    {!confirmedOTP && 
                     <button 
                         type="submit"
-                        onClick={()=>{
+                        onClick={(e)=>{
+                            e.preventDefault();
                             handleSendOTP();
                             handleShowOTPinput();
                         }} 
@@ -339,9 +431,8 @@ const Login = ({ onLogin }) => {
                     </button>
                     }
 
-                    {console.log(otp)}
-
-                    {(showOTPinput && notConsfirmOTP) && 
+                    
+                    {(showOTPinput && !confirmedOTP) && 
                         <div>
                             <input 
                                 className="otp-input"
@@ -355,7 +446,7 @@ const Login = ({ onLogin }) => {
                         </div>
                     }
 
-                    {!notConsfirmOTP && <button onClick={handleRegister}>Sign up</button>}
+                    {confirmedOTP && <button onClick={handleRegister}>Sign up</button>}
                     {message && <p className="register-messsage">{message}</p>}
                     <p>Already register? <a href="#" onClick={handleShowLogin}>Login now!</a></p>
                 </form>
@@ -369,7 +460,7 @@ const Login = ({ onLogin }) => {
                 {showLogin && LoginPage()}
                 {showRegister && RegisterPage()}
                 {showForgotPassword && ForgotPassword()}
-                {showResetPassword && handleResetPassword()}
+                {showNewPasswordInput && createNewPassword()}
             </div>
         </div>
     );
