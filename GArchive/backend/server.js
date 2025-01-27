@@ -43,6 +43,19 @@ app.post('/register', (req, res) => {
     });
 });
 
+app.post('/register-salt', async (req, res) => {
+    const {username, salt} = req.body;
+    const query = 'INSERT INTO users_id (username, salt) VALUES (?, ?)';
+
+    db.query(query, [username, salt], (err, result) => {
+        if (err) {
+            console.error('Error inserting data:', err);
+            return res.status(500).json({ error: 'Error registering salt' });
+        }
+        res.status(201).json({ message: 'Salt registered successfully!', saltId: result.insertId });
+    });
+});
+
 // Login route
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
