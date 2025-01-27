@@ -87,6 +87,18 @@ app.get('/users', (req, res) => {
     });
 });
 
+app.get('/users_id', (req, res) => {
+    const query = 'SELECT * FROM users_id';
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error('Error querying data:', err);
+            return res.status(500).json({ error: 'Error fetching salt' });
+        }
+        res.json(result);
+    });
+});
+
 // Change password route
 app.post('/change-password', (req, res) => {
     const { username, newPassword } = req.body;
@@ -108,6 +120,35 @@ app.post('/change-password', (req, res) => {
         const updateQuery = 'UPDATE users SET password = ? WHERE username = ?';
 
         db.query(updateQuery, [newPassword, username], (err, result) => {
+            if (err) {
+                console.error('Error updating password:', err);
+                return res.status(500).json({ error: 'Error updating password' });
+            }
+            res.json({ message: 'Password updated successfully' });
+        });
+    });
+});
+
+app.post('/change-salt', (req, res) => {
+    const { username, salt } = req.body;
+
+    // Check if the username exists
+    const checkQuery = 'SELECT * FROM users_id WHERE username = ?';
+
+    db.query(checkQuery, [username], (err, result) => {
+        if (err) {
+            console.error('Error querying data:', err);
+            return res.status(500).json({ error: 'Error verifying user' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Update the password for the given username
+        const updateQuery = 'UPDATE users_id SET salt = ? WHERE username = ?';
+
+        db.query(updateQuery, [salt, username], (err, result) => {
             if (err) {
                 console.error('Error updating password:', err);
                 return res.status(500).json({ error: 'Error updating password' });

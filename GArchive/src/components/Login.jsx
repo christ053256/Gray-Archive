@@ -124,10 +124,13 @@ const Login = ({ onLogin }) => {
     }
 
     const handleSendOTP = () => {
-        setOtp(generateOTP());
+        const generatedOTP = generateOTP();
+        setOtp(generatedOTP);
+        console.log(`OTP: ${generatedOTP}`);
     }
 
     const verifyOTP = () => {
+        
         if (user_otp.length === 0){
             setMessage("Please input OTP");
             return;
@@ -152,6 +155,7 @@ const Login = ({ onLogin }) => {
     }
 
     const ForgotPassword = () =>{
+
         const handleForgotPassword = async () =>{
             try {
                 const { data } = await axios.get('http://localhost:5000/users');
@@ -244,6 +248,23 @@ const Login = ({ onLogin }) => {
     }
 
     const createNewPassword = () =>{
+        // Handle password hashing
+        const handlePasswordSubmit = async (password) => {
+            try {
+                // Generate a random salt before hashing
+                const mysalt = crypto.getRandomValues(new Uint8Array(16)); // 16 bytes of salt
+                const hashHex = await hashPassword(password, mysalt);
+                
+                // Set the hashed password and salt into state
+                setHashedPassword(hashHex);
+                setSalt(mysalt.toString());
+            } catch (error) {
+                console.error("Error hashing password:", error);
+                setMessage("Error hashing password");
+            }
+        };
+
+    
         const handleChangePassword = async () =>{
             if(newPassword !== confirmPassword){
                 setMessage("Please make sure new password and confirm password are the same!");
@@ -253,7 +274,18 @@ const Login = ({ onLogin }) => {
             try {
                 const response = await axios.post('http://localhost:5000/change-password', {
                     username,
-                    newPassword : djb2Hash(newPassword),
+                    newPassword : hashedPassword,
+                });
+                alert("Password updated successfully");
+                window.location.reload();
+            } catch (error) {
+                setMessage(error.response?.data?.error || 'Error changing password');
+            }
+
+            try {
+                const response = await axios.post('http://localhost:5000/change-salt', {
+                    username,
+                    salt,
                 });
                 alert("Password updated successfully");
                 window.location.reload();
@@ -277,7 +309,10 @@ const Login = ({ onLogin }) => {
                             type="password"
                             placeholder="confirm password"
                             value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onChange={(e) => {
+                                setConfirmPassword(e.target.value);
+                                handlePasswordSubmit(e.target.value);
+                            }}
                         />
                         
                         {message && <p>{message}</p>}
@@ -301,14 +336,17 @@ const Login = ({ onLogin }) => {
             }
 
             try {
-                const response = await axios.post('http://localhost:5000/login', {
-                    username,
-                    password : djb2Hash(password),
-                });
-                console.log(response.data);
-                onLogin();
-                alert("Login successful!");
-                setMessage(null);
+                const hashPAssword = await verifyPassword(username, password);
+                const { data } = await axios.get('http://localhost:5000/users');
+                const userPassword = data.find(user => user.username === username).password;
+                
+
+                if (hashPAssword == userPassword){
+                    alert("Login successful!");
+                    onLogin(username);
+                } else {
+                    setMessage("Wrong username or password!");
+                }
             } catch (error) {
                 setMessage("Wrong username or password!");
             }
@@ -354,16 +392,11 @@ const Login = ({ onLogin }) => {
                 // Set the hashed password and salt into state
                 setHashedPassword(hashHex);
                 setSalt(mysalt.toString());
-                console.log(`Hashed Password: ${hashHex}`);
             } catch (error) {
                 console.error("Error hashing password:", error);
                 setMessage("Error hashing password");
             }
         };
-
-        console.log(`Orig Salt: ${salt}`);
-        console.log(`Orig Salt: ${salt.constructor.name}`);
-        console.log(`Username: ${username}`);
 
         // Handle registration
         const handleRegister = async (e) => {
@@ -420,14 +453,12 @@ const Login = ({ onLogin }) => {
                     username,
                     salt: salt
                 });
-
-                console.log(response.data);
             } catch (error) {
                 console.error('Salt registration failed:', error);
                 setMessage(error.response?.data?.error || "Salt registration failed");
             }
         };
-        console.log(`OTP: ${otp}`);
+
         return (
             <div className="RegisterPage">
                 <form>
