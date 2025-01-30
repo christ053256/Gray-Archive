@@ -141,7 +141,7 @@ app.post('/change-salt', (req, res) => {
             return res.status(500).json({ error: 'Error verifying user' });
         }
 
-        if (result.length === 0) {
+        if (result.length === 0) {  
             return res.status(404).json({ error: 'User not found' });
         }
 

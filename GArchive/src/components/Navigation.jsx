@@ -4,7 +4,7 @@ import './CSS/Navigation.css';
 import Login from './Login.jsx';
 import GlobalChat from './GlobalChat.jsx';
 import Forum from './Forum.jsx';
-import Docs from './Docs.jsx';
+import FYP from './FYP.jsx';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,15 +23,15 @@ const Navigation = () => {
   const handleLogin = () => {
     // This is where you set the user as logged in after successful login
     setIsLoggedIn(true);
-    handleNavClick('/docs'); // Redirect to Docs or another page after login
+    handleNavClick('/FYP'); // Redirect to FYP or another page after login
   };
 
   const renderContent = () => {
     switch (activeLink) {
       case '/login':
         return <Login onLogin={handleLogin} />; // Pass the login handler to Login component
-      case '/docs':
-        return <div className="content-container"><Docs /></div>;
+      case '/FYP':
+        return <div className="content-container"><FYP /></div>;
       case '/forums':
         return <div className="content-container"><Forum /></div>;
       case '/chat':
@@ -66,14 +66,14 @@ const Navigation = () => {
                 )}
 
                 <a 
-                  href="/docs" 
-                  className={`nav-link ${activeLink === '/docs' ? 'nav-link-active' : ''}`}
+                  href="/FYP" 
+                  className={`nav-link ${activeLink === '/FYP' ? 'nav-link-active' : ''}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavClick('/docs');
+                    handleNavClick('/FYP');
                   }}
                 >
-                  Docs
+                  FYP
                 </a>
                 <a 
                   href="/forums" 
@@ -125,14 +125,14 @@ const Navigation = () => {
                 )}
 
                 <a 
-                  href="/docs" 
-                  className={`nav-mobile-link ${activeLink === '/docs' ? 'nav-link-active' : ''}`}
+                  href="/FYP" 
+                  className={`nav-mobile-link ${activeLink === '/FYP' ? 'nav-link-active' : ''}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavClick('/docs');
+                    handleNavClick('/FYP');
                   }}
                 >
-                  Docs
+                  FYP
                 </a>
                 <a 
                   href="/forums" 

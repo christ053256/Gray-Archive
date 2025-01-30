@@ -1,7 +1,7 @@
 import { useState } from "react";
-import "./CSS/Docs.css";
+import "./CSS/FYP.css";
 
-const Docs = () => {
+const FYP = () => {
     return (
         <div className="main-container">
             <div className="main-docs-content">
@@ -11,4 +11,4 @@ const Docs = () => {
     );
 }
 
-export default Docs;
+export default FYP;
