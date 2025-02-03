@@ -1,5 +1,6 @@
 /* Navigation.css */
 .nav-header {
+    z-index: 2;
     background-color: #1f2937;
     color: white;
     width: 100%;

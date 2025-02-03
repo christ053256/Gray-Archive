@@ -45,7 +45,7 @@ app.post('/register', (req, res) => {
 
 app.post('/register-salt', async (req, res) => {
     const {username, salt} = req.body;
-    const query = 'INSERT INTO users_id (username, salt) VALUES (?, ?)';
+    const query = 'INSERT INTO user_salt (username, salt) VALUES (?, ?)';
 
     db.query(query, [username, salt], (err, result) => {
         if (err) {
@@ -74,6 +74,23 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.post('/bio', (req, res) => {
+    const { username, password } = req.body;
+
+    const query = 'SELECT * FROM users WHERE id = ? AND password = ?';
+
+    db.query(query, [username, password], (err, result) => {
+        if (err) {
+            console.error('Error querying data:', err);
+            return res.status(500).json({ error: 'Error logging in' });
+        }
+        if (result.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        res.json({ message: 'Login successful!', user: result[0] });
+    });
+});
+
 // Fetch all users route
 app.get('/users', (req, res) => {
     const query = 'SELECT * FROM users';
@@ -87,8 +104,8 @@ app.get('/users', (req, res) => {
     });
 });
 
-app.get('/users_id', (req, res) => {
-    const query = 'SELECT * FROM users_id';
+app.get('/user_salt', (req, res) => {
+    const query = 'SELECT * FROM user_salt';
 
     db.query(query, (err, result) => {
         if (err) {
@@ -129,11 +146,53 @@ app.post('/change-password', (req, res) => {
     });
 });
 
+app.post('/change-bio', (req, res) => {
+    const { username, bio } = req.body;
+
+    // Check if the username exists
+    const checkQuery = 'SELECT * FROM users WHERE username = ?';
+
+    db.query(checkQuery, [username], (err, result) => {
+        if (err) {
+            console.error('Error querying data:', err);
+            return res.status(500).json({ error: 'Error verifying user' });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Update the password for the given username
+        const updateQuery = 'UPDATE users SET bio = ? WHERE username = ?';
+
+        db.query(updateQuery, [bio, username], (err, result) => {
+            if (err) {
+                console.error('Error updating password:', err);
+                return res.status(500).json({ error: 'Error updating password' });
+            }
+            res.json({ message: 'Bio updated successfully' });
+        });
+    });
+});
+
+app.get('/user_bio', (req, res) => {
+    const { username } = req.query;
+    const query = 'SELECT * FROM users WHERE username = ?;';
+
+    db.query(query,[username], (err, result) => {
+        if (err) {
+            console.error('Error querying data:', err);
+            return res.status(500).json({ error: 'Error fetching bio' });
+        }
+        res.json(result); 
+    });
+});
+
 app.post('/change-salt', (req, res) => {
     const { username, salt } = req.body;
 
     // Check if the username exists
-    const checkQuery = 'SELECT * FROM users_id WHERE username = ?';
+    const checkQuery = 'SELECT * FROM user_salt WHERE username = ?';
 
     db.query(checkQuery, [username], (err, result) => {
         if (err) {
@@ -146,7 +205,7 @@ app.post('/change-salt', (req, res) => {
         }
 
         // Update the password for the given username
-        const updateQuery = 'UPDATE users_id SET salt = ? WHERE username = ?';
+        const updateQuery = 'UPDATE user_salt SET salt = ? WHERE username = ?';
 
         db.query(updateQuery, [salt, username], (err, result) => {
             if (err) {

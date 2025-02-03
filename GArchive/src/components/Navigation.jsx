@@ -5,12 +5,13 @@ import Login from './Login.jsx';
 import GlobalChat from './GlobalChat.jsx';
 import Forum from './Forum.jsx';
 import FYP from './FYP.jsx';
+import UserProfile from './UserProfile.jsx';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeLink, setActiveLink] = useState('/login'); // Set default to login
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
-
+  const [userData, setUserData] = useState(null); // Store user data
   useEffect(() => {
     window.history.pushState({}, '', activeLink);
   }, [activeLink]);
@@ -29,13 +30,15 @@ const Navigation = () => {
   const renderContent = () => {
     switch (activeLink) {
       case '/login':
-        return <Login onLogin={handleLogin} />; // Pass the login handler to Login component
+        return <Login onLogin={handleLogin} setUserData={setUserData} />; // Pass the login handler to Login component
       case '/FYP':
         return <div className="content-container"><FYP /></div>;
       case '/forums':
         return <div className="content-container"><Forum /></div>;
       case '/chat':
         return <div className="content-container"><GlobalChat /></div>;
+      case '/profile':
+        return <div className="content-container"><UserProfile setUserData={userData}/></div>;
       default:
         return <Login onLogin={handleLogin} />; // Fallback to login
     }
@@ -52,19 +55,6 @@ const Navigation = () => {
 
             <div className="nav-desktop">
               <div className="nav-links">
-                {!isLoggedIn && (
-                  <a 
-                    href="#"
-                    className={`nav-link ${activeLink === '/login' ? 'nav-link-active' : ''}`}
-                    onClick={(e) => { 
-                      e.preventDefault();
-                      handleNavClick('/login');
-                    }}
-                  >
-                    Login
-                  </a>
-                )}
-
                 <a 
                   href="/FYP" 
                   className={`nav-link ${activeLink === '/FYP' ? 'nav-link-active' : ''}`}
@@ -85,6 +75,7 @@ const Navigation = () => {
                 >
                   Forums
                 </a>
+
                 <a 
                   href="/chat" 
                   className={`nav-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
@@ -95,6 +86,33 @@ const Navigation = () => {
                 >
                   Global Chat
                 </a>
+
+                {!isLoggedIn && (
+                  <a 
+                    href="#"
+                    className={`nav-link ${activeLink === '/login' ? 'nav-link-active' : ''}`}
+                    onClick={(e) => { 
+                      e.preventDefault();
+                      handleNavClick('/login');
+                    }}
+                  >
+                    Login
+                  </a>
+                )}
+
+
+                {isLoggedIn && (
+                  <a 
+                    href="#"
+                    className={`nav-link ${activeLink === '/profile' ? 'nav-link-active' : ''}`}
+                    onClick={(e) => { 
+                      e.preventDefault();
+                      handleNavClick('/profile');
+                    }}
+                  >
+                    Profile
+                  </a>
+                )}
               </div>
             </div>
 
@@ -121,6 +139,19 @@ const Navigation = () => {
                     }}
                   >
                     Login
+                  </a>
+                )}
+
+                {isLoggedIn && (
+                  <a 
+                    href="#"
+                    className={`nav-mobile-link ${activeLink === '/profile' ? 'nav-link-active' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick('/profile');
+                    }}
+                  >
+                    Profile
                   </a>
                 )}
 

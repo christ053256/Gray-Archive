@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import axios from 'axios';
 import "./CSS/Login.css";
 import { hashPassword, verifyPassword } from './accountUtils.jsx';
+import { use } from "react";
 
 
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, setUserData }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showLogin, setShowLogin] = useState(true);
@@ -32,10 +33,17 @@ const Login = ({ onLogin }) => {
     const [hashedPassword, setHashedPassword] = useState("");
     const [salt, setSalt] = useState("");
 
-    const handleShowPasswordInput = () => {
-        setPassword("");
+    function clearInputs() {
         setEmail("");
         setNickname("");
+        setPassword("");
+        setUser_otp("");
+        setOtp("");
+        setMessage("");
+    }
+
+    const handleShowPasswordInput = () => {
+        clearInputs();
 
         setIsCooldown(false);
         setConfirmedOTP(false);
@@ -49,12 +57,8 @@ const Login = ({ onLogin }) => {
     }
 
     const handleShowLogin = (e)=>{
+        clearInputs();
         setUsername("");
-        setPassword("");
-        setEmail("");
-        setNickname("");
-        setOtp("");
-        setUser_otp("");
 
         setIsCooldown(false);
         setConfirmedOTP(false);
@@ -67,10 +71,8 @@ const Login = ({ onLogin }) => {
     }
 
     const handleShowSignUp = (e)=>{
+        clearInputs();
         setUsername("");
-        setPassword("");
-        setUser_otp("");
-        setOtp("");
 
         setIsCooldown(false);
         setConfirmedOTP(false);
@@ -81,12 +83,8 @@ const Login = ({ onLogin }) => {
     }
 
     const handleShowForgotPassword = (e)=>{
+        clearInputs();
         setUsername("");
-        setPassword("");
-        setEmail("");
-        setNickname("");
-        setUser_otp("");
-        setOtp("");
 
         setIsCooldown(false);
         setConfirmedOTP(false);
@@ -272,6 +270,7 @@ const Login = ({ onLogin }) => {
             }
 
             try {
+                console.log(`Username: ${username}`);
                 const response = await axios.post('http://localhost:5000/change-password', {
                     username,
                     newPassword : hashedPassword,
@@ -339,11 +338,20 @@ const Login = ({ onLogin }) => {
                 const hashPAssword = await verifyPassword(username, password);
                 const { data } = await axios.get('http://localhost:5000/users');
                 const userPassword = data.find(user => user.username === username).password;
+
+                const userNickname = data.find(user => user.username === username).nickname;
+                const userId = data.find(user => user.username === username).user_id;
                 
 
                 if (hashPAssword == userPassword){
                     alert("Login successful!");
-                    onLogin(username);
+                    const userData = {
+                        nickname: userNickname,
+                        username: username,
+                        id: userId
+                    }
+                    setUserData(userData);
+                    onLogin(username);       
                 } else {
                     setMessage("Wrong username or password!");
                 }

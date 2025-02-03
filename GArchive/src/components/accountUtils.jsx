@@ -41,7 +41,7 @@ const verifyPassword = async (username, password) => {
   let login_salt = crypto.getRandomValues(new Uint8Array(16)); // Fallback salt
 
   try {
-    const { data } = await axios.get('http://localhost:5000/users_id');
+    const { data } = await axios.get('http://localhost:5000/user_salt');
     
     // Check if the user exists and retrieve their salt
     const user = data.find(user => user.username === username);
