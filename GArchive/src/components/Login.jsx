@@ -351,7 +351,7 @@ const Login = ({ onLogin, setUserData }) => {
                         id: userId
                     }
                     setUserData(userData);
-                    onLogin(username);       
+                    onLogin();       
                 } else {
                     setMessage("Wrong username or password!");
                 }

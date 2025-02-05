@@ -1,13 +1,11 @@
-/* Main content wrapper */
+/* Main layout */
 .main-user-content {
-    position: sticky;
-    margin-top: 4rem;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 4.5rem auto;
     padding: 2rem;
-    width: 100%;
-    max-width: 480px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* User profile section */
@@ -15,253 +13,200 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
-    padding: 1.5rem;
-    background-color: #fafafa;
+    padding: 2rem;
+    background-color: #ffffff;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    user-select: none
+    margin-bottom: 2rem;
 }
 
-/* User icon styles */
+.nickname{
+    user-select: none;
+}
+
 .user-profile svg {
-    color: #424242;
-    background-color: #eeeeee;
-    padding: 12px;
+    color: #4a5568;
+    background-color: #e2e8f0;
+    padding: 1rem;
     border-radius: 50%;
     margin-bottom: 1rem;
 }
 
-/* Username heading */
 .user-profile h2 {
-    color: #212121;
+    color: #2d3748;
     font-size: 1.5rem;
-    font-weight: 600;
     margin: 0.5rem 0;
 }
 
-/* User ID heading */
 .user-profile h3 {
-    color: #757575;
+    color: #718096;
     font-size: 1rem;
-    font-weight: 400;
-    margin: 0;
+    margin-bottom: 1.5rem;
+}
+
+.user-profile span {
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 /* Bio section */
-.user-profile span {
-    color: #424242;
-    font-weight: 500;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
+.bio {
+    color: #4a5568;
+    text-align: center;
+    max-width: 500px;
+    margin: 1rem 0;
+    line-height: 1.6;
 }
 
-.user-profile .bio {
-    display: block;
-    color: #757575;
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
-    min-height: 1.5rem;
-}
-
-/* Bio editing */
-.user-profile textarea {
+.bio-input {
     width: 100%;
-    min-height: 80px;
-    padding: 0.75rem;
-    margin: 0.5rem 0;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    resize: vertical;
-    background-color: #ffffff;
-}
-
-.user-profile textarea:focus {
-    outline: none;
-    border-color: #666;
-    box-shadow: 0 0 0 2px rgba(102, 102, 102, 0.1);
-}
-
-/* Bio buttons */
-.edit-bio, .save-bio {
-    padding: 0.5rem 1rem;
-    margin-top: 0.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.edit-bio {
-    background-color: #eeeeee;
-    color: #424242;
-}
-
-.edit-bio:hover {
-    background-color: #e0e0e0;
-}
-
-.save-bio {
-    background-color: #424242;
-    color: white;
-}
-
-.save-bio:hover {
-    background-color: #2d2d2d;
-}
-
-/* User stats section */
-.user-stats {
-    margin-top: 1.5rem;
+    min-height: 100px;
     padding: 1rem;
-    background-color: #fafafa;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    margin: 1rem 0;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
 }
 
-.user-stats span {
-    color: #424242;
-    font-weight: 500;
+.bio-input:focus {
+    outline: none;
+    border-color: #718096;
+}
+
+/* Stats section */
+.user-stats {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px solid #0a3874;
+    margin-bottom: 2rem;
+}
+
+.stats {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.stats span, .tags span {
     display: block;
-    margin-bottom: 0.5rem;
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
+.stats h4 {
+    color: #4a5568;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* Tags section */
 .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    align-items: center;
+    user-select: none;
 }
 
 .tags h4 {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
     margin: 0;
-    padding: 0.25rem 0.75rem;
-    background-color: #eeeeee;
-    border-radius: 16px;
-    color: #424242;
-    font-size: 0.875rem;
-    font-weight: 500;
 }
 
-/* Logout button */
-.Log-out {
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 1.5rem;
-    background-color: #424242;
-    color: white;
+/* Buttons */
+.edit-bio, .save-bio, .Log-out {
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 6px;
-    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s;
+}
+
+.edit-bio, .save-bio {
+    background-color: #e2e8f0;
+    color: #4a5568;
+    margin-top: 1rem;
+}
+
+.Log-out {
+    background-color: #4d3f3f;
+    color: white;
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    user-select: none;
+}
+.edit-bio{
+    user-select: none;
+}
+.edit-bio:hover, .save-bio:hover {
+    background-color: #cbd5e0;
 }
 
 .Log-out:hover {
-    background-color: #2d2d2d;
+    background-color: #f56565;
 }
 
-/* Hover effects */
-.user-profile:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+/* Message styling */
+.message {
+    color: #e53e3e;
+    margin-top: 1rem;
+    font-size: 0.9rem;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .main-container {
+    .main-user-content {
+        margin: 1rem;
         padding: 1rem;
     }
-    
-    .main-user-content {
+
+    .user-profile, .user-stats {
         padding: 1.5rem;
     }
-    
-    .user-profile h2 {
-        font-size: 1.25rem;
+
+    .tags {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    
-    .user-profile textarea {
-        min-height: 60px;
+
+    .tags h4 {
+        margin: 0.2rem 0;
+    }
+
+    .stats{
+        display: block;
     }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .main-container {
-        background-color: #1a1a1a;
-    }
-    
-    .main-user-content {
-        background-color: #2d2d2d;
-    }
-    
-    .user-profile,
-    .user-stats {
-        background-color: #242424;
-        border-color: #404040;
-    }
-    
+@media (max-width: 480px) {
     .user-profile svg {
-        color: #e0e0e0;
-        background-color: #333333;
+        width: 48px;
+        height: 48px;
+        padding: 0.75rem;
     }
-    
+
     .user-profile h2 {
-        color: #ffffff;
+        font-size: 1.25rem;
     }
-    
-    .user-profile h3,
-    .user-profile .bio {
-        color: #bdbdbd;
+
+    .user-profile h3 {
+        font-size: 0.9rem;
     }
-    
-    .user-profile span,
-    .user-stats span {
-        color: #e0e0e0;
+
+    .bio-input {
+        min-height: 80px;
     }
-    
-    .user-profile textarea {
-        background-color: #333;
-        border-color: #404040;
-        color: #fff;
-    }
-    
-    .user-profile textarea:focus {
-        border-color: #666;
-        box-shadow: 0 0 0 2px rgba(102, 102, 102, 0.2);
-    }
-    
-    .edit-bio {
-        background-color: #333;
-        color: #e0e0e0;
-    }
-    
-    .edit-bio:hover {
-        background-color: #404040;
-    }
-    
-    .save-bio {
-        background-color: #666;
-        color: #fff;
-    }
-    
-    .save-bio:hover {
-        background-color: #777;
-    }
-    
-    .tags h4 {
-        background-color: #333333;
-        color: #e0e0e0;
-    }
-    
-    .Log-out {
-        background-color: #666;
-    }
-    
-    .Log-out:hover {
-        background-color: #777;
+
+    .stats{
+        display: block;
     }
 }

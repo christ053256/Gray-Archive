@@ -3,7 +3,7 @@ import './CSS/UserProfile.css';
 import { User } from 'lucide-react';
 import axios from 'axios';
 
-const UserProfile = ({ setUserData }) => {  // Fix props destructuring
+const UserProfile = ({ setUserData, onLogOut }) => {  // Fix props destructuring
     const [newBio, setNewBio] = useState('');
     const [myBio, setMyBio] = useState('');
     const [editBio, setEditBio] = useState(false);
@@ -21,9 +21,6 @@ const UserProfile = ({ setUserData }) => {  // Fix props destructuring
                     username: setUserData.username, 
                 }
             });
-            
-            // Log the response to debug
-            console.log('Response:', response.data[0].bio);
             
             // Check if we have data and access the bio correctly
             if (response.data && response.data[0].bio) {
@@ -74,13 +71,13 @@ const UserProfile = ({ setUserData }) => {  // Fix props destructuring
     };
     
     return (
-        <div className="main-container">
+        <div className="main-container"> {/* Fix class name don't adjust it's design cause it's in the App.jsx */ }
             <div className="main-user-content">
                 <div className="user-profile">
                     <User size={64} />  {/* Fix size prop syntax */}
-                    <h2>{setUserData.nickname}</h2>
-                    <h3>ID: {setUserData.id}</h3>
-                    <span>Bio</span>
+                    <h2 className='nickname'>{setUserData.nickname}</h2>
+                    <h3 className='UID'>ID: {setUserData.id}</h3>
+                    
                     {!editBio && <span className='bio'>{myBio}</span>}  {/* Show myBio instead of newBio */}
                     {editBio && handleBio()}
                     
@@ -97,13 +94,27 @@ const UserProfile = ({ setUserData }) => {  // Fix props destructuring
                 </div>
 
                 <div className="user-stats">
-                    <span>TAGS: </span>
+                    <div className='stats'>
+                        <h4>Posts: {0}</h4>
+                        <h4>Comments: {0}</h4>
+                        <h4>Reactions: {0}</h4>
+                        <h4>Followers: {0}</h4>
+                        <h4>Following: {0}</h4>
+                        <h4>Forums: {0}</h4>
+                    </div>
+                    <br />
                     <div className='tags'>
-                        <h4>#TRY</h4> <h4>#TRY</h4> <h4>#TRY</h4>
+                        <span>Achievements: </span><br /> 
+                        <h4>#Moderator</h4> <h4>#Thirsty</h4> <h4>#Gamer</h4> <h4>#Star</h4>
                     </div>
                 </div>
 
-                <button className='Log-out'>Log out</button>
+                <button 
+                    className='Log-out'
+                    onClick={() =>{
+                        onLogOut();
+                    }}
+                >Log out</button>
             </div>
         </div>
     );

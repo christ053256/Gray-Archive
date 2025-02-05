@@ -12,6 +12,7 @@ const Navigation = () => {
   const [activeLink, setActiveLink] = useState('/login'); // Set default to login
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
   const [userData, setUserData] = useState(null); // Store user data
+
   useEffect(() => {
     window.history.pushState({}, '', activeLink);
   }, [activeLink]);
@@ -27,6 +28,13 @@ const Navigation = () => {
     handleNavClick('/FYP'); // Redirect to FYP or another page after login
   };
 
+  // In your parent component
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserData(null);
+    handleNavClick('/login'); // or whatever route you want to redirect to after logout
+  };
+
   const renderContent = () => {
     switch (activeLink) {
       case '/login':
@@ -36,9 +44,9 @@ const Navigation = () => {
       case '/forums':
         return <div className="content-container"><Forum /></div>;
       case '/chat':
-        return <div className="content-container"><GlobalChat /></div>;
+        return <div className="content-container"><GlobalChat setUserData={userData}/></div>;
       case '/profile':
-        return <div className="content-container"><UserProfile setUserData={userData}/></div>;
+        return <div className="content-container"><UserProfile setUserData={userData} onLogOut={handleLogout}/></div>;
       default:
         return <Login onLogin={handleLogin} />; // Fallback to login
     }
@@ -63,7 +71,7 @@ const Navigation = () => {
                     handleNavClick('/FYP');
                   }}
                 >
-                  FYP
+                  Shorts
                 </a>
                 <a 
                   href="/forums" 
@@ -74,17 +82,6 @@ const Navigation = () => {
                   }}
                 >
                   Forums
-                </a>
-
-                <a 
-                  href="/chat" 
-                  className={`nav-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick('/chat');
-                  }}
-                >
-                  Global Chat
                 </a>
 
                 {!isLoggedIn && (
@@ -102,6 +99,18 @@ const Navigation = () => {
 
 
                 {isLoggedIn && (
+                  <div>
+                  <a 
+                  href="/chat" 
+                  className={`nav-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick('/chat');
+                  }}
+                  >
+                  Global Chat
+                  </a>
+
                   <a 
                     href="#"
                     className={`nav-link ${activeLink === '/profile' ? 'nav-link-active' : ''}`}
@@ -112,6 +121,7 @@ const Navigation = () => {
                   >
                     Profile
                   </a>
+                  </div>
                 )}
               </div>
             </div>
@@ -163,7 +173,7 @@ const Navigation = () => {
                     handleNavClick('/FYP');
                   }}
                 >
-                  FYP
+                  Shorts
                 </a>
                 <a 
                   href="/forums" 
