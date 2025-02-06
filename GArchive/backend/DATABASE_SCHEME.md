@@ -27,3 +27,10 @@ CREATE TABLE user_tags (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (tag_id) REFERENCES tags(tag_id) ON DELETE CASCADE
 );
+
+CREATE TABLE public_chats (
+   username VARCHAR(20) NOT NULL,
+   message TEXT,
+   date DATETIME,
+   FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+);
