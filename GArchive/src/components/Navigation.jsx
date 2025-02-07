@@ -99,7 +99,7 @@ const Navigation = () => {
 
 
                 {isLoggedIn && (
-                  <div>
+                  <div className='nav-links'>
                   <a 
                   href="/chat" 
                   className={`nav-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
@@ -153,16 +153,29 @@ const Navigation = () => {
                 )}
 
                 {isLoggedIn && (
-                  <a 
-                    href="#"
-                    className={`nav-mobile-link ${activeLink === '/profile' ? 'nav-link-active' : ''}`}
+                  <div className='nav-mobile-links'>
+                    <a 
+                      href="#"
+                      className={`nav-mobile-link ${activeLink === '/profile' ? 'nav-link-active' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavClick('/profile');
+                      }}
+                    >
+                      Profile
+                    </a>
+
+                    <a 
+                    href="/chat" 
+                    className={`nav-mobile-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
                     onClick={(e) => {
                       e.preventDefault();
-                      handleNavClick('/profile');
+                      handleNavClick('/chat');
                     }}
-                  >
-                    Profile
-                  </a>
+                    >
+                    Global Chat
+                    </a>
+                  </div>
                 )}
 
                 <a 
@@ -185,16 +198,7 @@ const Navigation = () => {
                 >
                   Forums
                 </a>
-                <a 
-                  href="/chat" 
-                  className={`nav-mobile-link ${activeLink === '/chat' ? 'nav-link-active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick('/chat');
-                  }}
-                >
-                  Global Chat
-                </a>
+                
               </div>
             </div>
           )}

@@ -217,7 +217,50 @@ app.post('/change-salt', (req, res) => {
     });
 });
 
+// Add this route to your existing server.js file
 
+app.post('/send-message', (req, res) => {
+    const { username, message, date } = req.body;
+    
+    const query = 'INSERT INTO public_chats (username, message, date) VALUES (?, ?, ?)';
+    
+    db.query(query, [username, message, date], (err, result) => {
+        if (err) {
+            console.error('Error inserting message:', err);
+            return res.status(500).json({ error: 'Error sending message' });
+        }
+        res.status(201).json({ 
+            message: 'Message sent successfully!', 
+            chatId: result.insertId,
+            timestamp: date
+        });
+    });
+});
+
+// Route to fetch messages
+app.get('/messages', (req, res) => {
+    // Read the limit from query parameters, defaulting to 50 if not provided
+    const limit = parseInt(req.query.limit, 10) || 50;
+    // Read the offset from query parameters, defaulting to 0 if not provided
+    const offset = parseInt(req.query.offset, 10) || 0;
+  
+    // We're ordering by date DESC so that the most recent messages are returned first.
+    // If you want to display them in ascending order on the client,
+    // you can reverse the array before sending.
+    const query = 'SELECT * FROM public_chats ORDER BY date DESC LIMIT ? OFFSET ?';
+  
+    db.query(query, [limit, offset], (err, result) => {
+      if (err) {
+        console.error('Error fetching messages:', err);
+        return res.status(500).json({ error: 'Error retrieving messages' });
+      }
+      // If you prefer ascending order on the client, uncomment the following line:
+      // result = result.reverse();
+      res.json(result);
+    });
+  });
+  
+  
 
 // Start server
 app.listen(5000, () => {

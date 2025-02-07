@@ -33,18 +33,23 @@
 
 .chat-messages {
     flex: 1;
-    padding: 1.5rem;
+    padding: 5px;
     overflow-y: auto;
     background: #2d3748;
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-message {
     margin-bottom: 1.5rem;
     max-width: 70%;
+    width: fit-content;
 }
 
 .chat-message-user {
+    display: flex;
     margin-bottom: 0.25rem;
+    padding: 0 0.5rem;
 }
 
 .chat-message-user p {
@@ -59,12 +64,45 @@
     padding: 0.75rem 1rem;
     border-radius: 12px;
     border-top-left-radius: 4px;
+    width: fit-content;
+    max-width: 100%;
+    word-wrap: break-word;
 }
 
 .chat-message-content p {
     margin: 0;
     color: #e2e8f0;
     line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* Received messages style */
+.chat-message.received {
+    align-self: flex-start;
+    margin-right: auto;
+    padding-right: 20%;
+}
+
+.chat-message.received .chat-message-user {
+    justify-content: flex-start;
+}
+
+/* Sent messages style */
+.chat-message.sent {
+    align-self: flex-end;
+    margin-left: auto;
+    padding-left: 20%;
+}
+
+.chat-message.sent .chat-message-user {
+    justify-content: flex-end;
+}
+
+.chat-message.sent .chat-message-content {
+    background: #718096;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 12px;
+    margin-left: auto;
 }
 
 .chat-input {
@@ -111,26 +149,10 @@
     background: #4a5568;
 }
 
-/* Received messages style */
-.chat-message.received {
-    margin-left: 0;
-    margin-right: auto;
-}
-
-/* Sent messages style */
-.chat-message.sent {
-    margin-left: auto;
-    margin-right: 0;
-}
-
-.chat-message.sent .chat-message-content {
-    background: #718096;
-    border-top-right-radius: 4px;
-    border-top-left-radius: 12px;
-}
-
-.chat-message.sent .chat-message-content p {
-    color: #e2e8f0;
+.chat-message-user small {
+    font-size: 0.8em;
+    color: #a0aec0;
+    margin-left: 8px;
 }
 
 /* Custom scrollbar */
@@ -154,9 +176,6 @@
 /* Responsive design */
 @media (max-width: 768px) {
     .main-global-content {
-        margin: 3.5rem;
-    }
-    .main-global-content {
         padding: 1rem;
     }
 
@@ -167,6 +186,14 @@
 
     .chat-message {
         max-width: 85%;
+    }
+
+    .chat-message.received {
+        padding-right: 10%;
+    }
+
+    .chat-message.sent {
+        padding-left: 10%;
     }
 
     .chat-header {
@@ -193,6 +220,14 @@
 
     .chat-message {
         max-width: 90%;
+    }
+
+    .chat-message.received {
+        padding-right: 5%;
+    }
+
+    .chat-message.sent {
+        padding-left: 5%;
     }
 
     .chat-input {
