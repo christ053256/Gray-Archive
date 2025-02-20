@@ -1,270 +1,284 @@
-// server.js
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import mysql from 'mysql2';
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, get, push, query, orderByChild, limitToLast, update } from "firebase/database";
 import dotenv from 'dotenv';
 
-dotenv.config(); // Load environment variables
+dotenv.config();
+
+const firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
+  };
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const database = getDatabase(firebaseApp);
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const urlDB = `mysql://${process.env.MYSQLUSER}:${process.env.MYSQL_ROOT_PASSWORD}@${process.env.RAILWAY_TCP_PROXY_DOMAIN}:${process.env.RAILWAY_TCP_PROXY_PORT}/${process.env.MYSQL_DATABASE}`
-
-const db = mysql.createConnection(urlDB);
-
-// MySQL connection
-// const db = mysql.createConnection({
-//     host: process.env.MYSQL_HOST,
-//     user: process.env.MYSQL_USER,
-//     password: process.env.MYSQL_PASSWORD,
-//     database: process.env.MYSQL_DATABASE,
-// });
-
-// Connect to MySQL
-db.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MySQL:', err);
-        return;
-    }
-    console.log('Connected to MySQL database');
-});
-
 // Register route
-app.post('/register', (req, res) => {
-    const { username, email, password, nickname } = req.body;
-
-    const query = 'INSERT INTO users (username, email, password, nickname) VALUES (?, ?, ?, ?)';
-    
-    db.query(query, [username, email, password, nickname], (err, result) => {
-        if (err) {
-            console.error('Error inserting data:', err);
-            return res.status(500).json({ error: 'Error registering user' });
+app.post('/register', async (req, res) => {
+    try {
+        const { username, email, password, nickname } = req.body;
+        
+        // Check if username already exists
+        const userRef = ref(database, `users/${username}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists()) {
+            return res.status(400).json({ error: 'Username already exists' });
         }
-        res.status(201).json({ message: 'User registered successfully!', userId: result.insertId });
-    });
+
+        // Create new user
+        await set(userRef, {
+            email,
+            password,
+            nickname,
+            bio: ''
+        });
+
+        res.status(201).json({ message: 'User registered successfully!' });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ error: 'Error registering user' });
+    }
 });
 
+// Register salt
 app.post('/register-salt', async (req, res) => {
-    const {username, salt} = req.body;
-    const query = 'INSERT INTO user_salt (username, salt) VALUES (?, ?)';
-
-    db.query(query, [username, salt], (err, result) => {
-        if (err) {
-            console.error('Error inserting data:', err);
-            return res.status(500).json({ error: 'Error registering salt' });
-        }
-        res.status(201).json({ message: 'Salt registered successfully!', saltId: result.insertId });
-    });
+    try {
+        const { username, salt } = req.body;
+        const saltRef = ref(database, `user_salt/${username}`);
+        
+        await set(saltRef, { salt });
+        res.status(201).json({ message: 'Salt registered successfully!' });
+    } catch (error) {
+        console.error('Error registering salt:', error);
+        res.status(500).json({ error: 'Error registering salt' });
+    }
 });
 
 // Login route
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const userRef = ref(database, `users/${username}`);
+        const snapshot = await get(userRef);
 
-    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-
-    db.query(query, [username, password], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error logging in' });
-        }
-        if (result.length === 0) {
+        if (!snapshot.exists()) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        res.json({ message: 'Login successful!', user: result[0] });
-    });
-});
 
-app.post('/bio', (req, res) => {
-    const { username, password } = req.body;
-
-    const query = 'SELECT * FROM users WHERE id = ? AND password = ?';
-
-    db.query(query, [username, password], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error logging in' });
-        }
-        if (result.length === 0) {
+        const userData = snapshot.val();
+        if (userData.password !== password) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        res.json({ message: 'Login successful!', user: result[0] });
-    });
+
+        res.json({ message: 'Login successful!', user: { ...userData, username } });
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).json({ error: 'Error logging in' });
+    }
 });
 
 // Fetch all users route
-app.get('/users', (req, res) => {
-    const query = 'SELECT * FROM users';
-
-    db.query(query, (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error fetching users' });
+app.get('/users', async (req, res) => {
+    try {
+        const usersRef = ref(database, 'users');
+        const snapshot = await get(usersRef);
+        
+        if (!snapshot.exists()) {
+            return res.json([]);
         }
-        res.json(result);
-    });
+
+        const users = [];
+        snapshot.forEach((childSnapshot) => {
+            users.push({
+                username: childSnapshot.key,
+                ...childSnapshot.val()
+            });
+        });
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Error fetching users' });
+    }
 });
 
-app.get('/user_salt', (req, res) => {
-    const query = 'SELECT * FROM user_salt';
-
-    db.query(query, (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error fetching salt' });
+// Get user salts
+app.get('/user_salt', async (req, res) => {
+    try {
+        const saltsRef = ref(database, 'user_salt');
+        const snapshot = await get(saltsRef);
+        
+        if (!snapshot.exists()) {
+            return res.json([]);
         }
-        res.json(result);
-    });
+
+        const salts = [];
+        snapshot.forEach((childSnapshot) => {
+            salts.push({
+                username: childSnapshot.key,
+                ...childSnapshot.val()
+            });
+        });
+
+        res.json(salts);
+    } catch (error) {
+        console.error('Error fetching salts:', error);
+        res.status(500).json({ error: 'Error fetching salts' });
+    }
 });
 
 // Change password route
-app.post('/change-password', (req, res) => {
-    const { username, newPassword } = req.body;
-
-    // Check if the username exists
-    const checkQuery = 'SELECT * FROM users WHERE username = ?';
-
-    db.query(checkQuery, [username], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error verifying user' });
-        }
-
-        if (result.length === 0) {
+app.post('/change-password', async (req, res) => {
+    try {
+        const { username, newPassword } = req.body;
+        const userRef = ref(database, `users/${username}`);
+        
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Update the password for the given username
-        const updateQuery = 'UPDATE users SET password = ? WHERE username = ?';
-
-        db.query(updateQuery, [newPassword, username], (err, result) => {
-            if (err) {
-                console.error('Error updating password:', err);
-                return res.status(500).json({ error: 'Error updating password' });
-            }
-            res.json({ message: 'Password updated successfully' });
+        const userData = snapshot.val();
+        await update(userRef, {
+            ...userData,
+            password: newPassword
         });
-    });
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({ error: 'Error updating password' });
+    }
 });
 
-app.post('/change-bio', (req, res) => {
-    const { username, bio } = req.body;
-
-    // Check if the username exists
-    const checkQuery = 'SELECT * FROM users WHERE username = ?';
-
-    db.query(checkQuery, [username], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error verifying user' });
-        }
-
-        if (result.length === 0) {
+// Change bio route
+app.post('/change-bio', async (req, res) => {
+    try {
+        const { username, bio } = req.body;
+        const userRef = ref(database, `users/${username}`);
+        
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Update the password for the given username
-        const updateQuery = 'UPDATE users SET bio = ? WHERE username = ?';
-
-        db.query(updateQuery, [bio, username], (err, result) => {
-            if (err) {
-                console.error('Error updating password:', err);
-                return res.status(500).json({ error: 'Error updating password' });
-            }
-            res.json({ message: 'Bio updated successfully' });
+        const userData = snapshot.val();
+        await update(userRef, {
+            ...userData,
+            bio
         });
-    });
+
+        res.json({ message: 'Bio updated successfully' });
+    } catch (error) {
+        console.error('Error updating bio:', error);
+        res.status(500).json({ error: 'Error updating bio' });
+    }
 });
 
-app.get('/user_bio', (req, res) => {
-    const { username } = req.query;
-    const query = 'SELECT * FROM users WHERE username = ?;';
-
-    db.query(query,[username], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error fetching bio' });
-        }
-        res.json(result); 
-    });
-});
-
-app.post('/change-salt', (req, res) => {
-    const { username, salt } = req.body;
-
-    // Check if the username exists
-    const checkQuery = 'SELECT * FROM user_salt WHERE username = ?';
-
-    db.query(checkQuery, [username], (err, result) => {
-        if (err) {
-            console.error('Error querying data:', err);
-            return res.status(500).json({ error: 'Error verifying user' });
-        }
-
-        if (result.length === 0) {  
+// Get user bio
+app.get('/user_bio', async (req, res) => {
+    try {
+        const { username } = req.query;
+        const userRef = ref(database, `users/${username}`);
+        
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Update the password for the given username
-        const updateQuery = 'UPDATE user_salt SET salt = ? WHERE username = ?';
-
-        db.query(updateQuery, [salt, username], (err, result) => {
-            if (err) {
-                console.error('Error updating password:', err);
-                return res.status(500).json({ error: 'Error updating password' });
-            }
-            res.json({ message: 'Password updated successfully' });
-        });
-    });
+        res.json([{ ...snapshot.val(), username }]);
+    } catch (error) {
+        console.error('Error fetching bio:', error);
+        res.status(500).json({ error: 'Error fetching bio' });
+    }
 });
 
-// Add this route to your existing server.js file
-
-app.post('/send-message', (req, res) => {
-    const { username, message, date } = req.body;
-    
-    const query = 'INSERT INTO public_chats (username, message, date) VALUES (?, ?, ?)';
-    
-    db.query(query, [username, message, date], (err, result) => {
-        if (err) {
-            console.error('Error inserting message:', err);
-            return res.status(500).json({ error: 'Error sending message' });
+// Change salt route
+app.post('/change-salt', async (req, res) => {
+    try {
+        const { username, salt } = req.body;
+        const saltRef = ref(database, `user_salt/${username}`);
+        
+        const snapshot = await get(saltRef);
+        if (!snapshot.exists()) {
+            return res.status(404).json({ error: 'User not found' });
         }
-        res.status(201).json({ 
-            message: 'Message sent successfully!', 
-            chatId: result.insertId,
+
+        await set(saltRef, { salt });
+        res.json({ message: 'Salt updated successfully' });
+    } catch (error) {
+        console.error('Error updating salt:', error);
+        res.status(500).json({ error: 'Error updating salt' });
+    }
+});
+
+// Send message route
+app.post('/send-message', async (req, res) => {
+    try {
+        const { username, message, date } = req.body;
+        const chatRef = ref(database, 'public_chats');
+        
+        const newMessageRef = push(chatRef);
+        await set(newMessageRef, {
+            username,
+            message,
+            date
+        });
+
+        res.status(201).json({
+            message: 'Message sent successfully!',
+            chatId: newMessageRef.key,
             timestamp: date
         });
-    });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Error sending message' });
+    }
 });
 
-// Route to fetch messages
-app.get('/messages', (req, res) => {
-    // Read the limit from query parameters, defaulting to 50 if not provided
-    const limit = parseInt(req.query.limit, 10) || 50;
-    // Read the offset from query parameters, defaulting to 0 if not provided
-    const offset = parseInt(req.query.offset, 10) || 0;
-  
-    // We're ordering by date DESC so that the most recent messages are returned first.
-    // If you want to display them in ascending order on the client,
-    // you can reverse the array before sending.
-    const query = 'SELECT * FROM public_chats ORDER BY date DESC LIMIT ? OFFSET ?';
-  
-    db.query(query, [limit, offset], (err, result) => {
-      if (err) {
-        console.error('Error fetching messages:', err);
-        return res.status(500).json({ error: 'Error retrieving messages' });
-      }
-      // If you prefer ascending order on the client, uncomment the following line:
-      // result = result.reverse();
-      res.json(result);
-    });
-  });
-  
-  
+// Get messages route
+app.get('/messages', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit, 10) || 50;
+        const chatRef = ref(database, 'public_chats');
+        
+        const messagesQuery = query(chatRef, orderByChild('date'), limitToLast(limit));
+        const snapshot = await get(messagesQuery);
+        
+        if (!snapshot.exists()) {
+            return res.json([]);
+        }
+
+        const messages = [];
+        snapshot.forEach((childSnapshot) => {
+            messages.push({
+                id: childSnapshot.key,
+                ...childSnapshot.val()
+            });
+        });
+
+        // Sort messages in descending order by date
+        messages.sort((a, b) => new Date(b.date) - new Date(a.date));
+        res.json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Error retrieving messages' });
+    }
+});
 
 // Start server
 app.listen(5000, () => {
