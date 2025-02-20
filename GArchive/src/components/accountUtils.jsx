@@ -5,7 +5,7 @@ import axios from 'axios';
  * @param {number} length - Length of the salt (in bytes)
  * @returns {ArrayBuffer} The random salt
  */
-// asd
+
 /**
  * Hashes a password using SHA-256 with a salt
  * @param {string} password - The plain text password to hash
